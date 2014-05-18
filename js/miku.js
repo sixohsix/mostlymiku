@@ -2,7 +2,7 @@
 window.Miku = (function (window) {
 
 var Miku = {};
-Miku.logging = false;
+Miku.logging = true;// false;
 
 var gapi;
 
@@ -20,7 +20,7 @@ var l = Miku.logging ? window.console.log.bind(window.console) : function () {};
 Miku.api_key = "AIzaSyDsImZ2h077_LxeDhwh3Q6fjHtd5uZ7aaM";
 Miku.playlistId = "PL_ON6xeP4BD9pU8hGN5O_yDrrBckEVQrR";
 Miku.playlistItems = [];
-Miku.ytPlayer = undefined;
+Miku.ytPlayers = [];
 
 Miku.asyncActions = [];
 
@@ -57,40 +57,53 @@ window.onGapiLoaded = Miku.onGapiLoaded = function () {
 			gapi.client.load("youtube", "v3", next);
 		},
 		Miku.loadPlaylist,
-		Miku.dumpPl,
-		Miku.setupPlayer,
+		Miku.setupPlayers,
 		Miku.setupInterface,
-		Miku.playRandomVideo
+		Miku.prepNextVideo,
+		Miku.playNextVideo
 	]);
 }
 
-Miku.setupPlayer = function () {
-	Miku.ytPlayer = new window.YT.Player('mainVideo', {
-        height: '100%',
-        width: '100%',
-        playerVars: { 
-        	autoplay: 1,
-        	controls: 0,
-        	showinfo: 0
-        },
-        videoId: Miku.randomVideoId(),
-        events: {
-        	'onReady': next,
-            'onStateChange': Miku.onYtPlayerStateChange,
-      }
-	});
+function makePlayer(id) {
+	return {
+		id: id,
+		player: new window.YT.Player(id, {
+	        height: '100%',
+	        width: '100%',
+	        playerVars: { 
+	        	autoplay: 0,
+	        	controls: 0,
+	        	showinfo: 0
+	        },
+	        videoId: "",
+	        events: {
+	        	'onReady': next,
+	            'onStateChange': Miku.onYtPlayerStateChange,
+	        }
+		})
+	};
+}
+
+Miku.setupPlayers = function () {
+	now([
+		function () {
+			Miku.ytPlayers[0] = makePlayer("mainVideo");
+		},
+		function () {
+			Miku.ytPlayers[1] = makePlayer("mainVideo2");
+		}]);
 }
 
 Miku.setupInterface = function () {
 	l("YTP ready")
-	l("skip buttons", q(".skip").length);
 	q(".skip").forEach(function (node) {
 		node.onclick = Miku.skipVideo;
 	});
 	q(".loading").forEach(function (node) {
 		node.style.display = "none";
 	});
-	Miku.preventDoorStuck(Miku.ytPlayer);
+	Miku.preventDoorStuck(Miku.ytPlayers[0].player);
+	Miku.preventDoorStuck(Miku.ytPlayers[1].player);
 	next();
 }
 
@@ -123,26 +136,45 @@ Miku.loadPlaylist = function () {
 	loadMore();
 }
 
-Miku.dumpPl = function () {
-	l("Loaded the playlist", Miku.playlistItems);
-	next();
-}
-
 Miku.randomVideoId = function () {
 	return Miku.playlistItems[
 		Math.floor(Math.random() * Miku.playlistItems.length)].videoId;
 }
 
-Miku.playRandomVideo = function () {
-	l("Asked to play a video");
+Miku.prepNextVideo = function () {
+	l("Prepping video");
+	var player = Miku.ytPlayers[1].player;
 	var aVideoId = Miku.randomVideoId();
-	l("Playing video", aVideoId);
-	Miku.ytPlayer.loadVideoById(aVideoId, 0);
-	next();
+	l("Prepping video", aVideoId);
+	player.cueVideoById(aVideoId);
+	player.mute();
+	player.playVideo();
+	window.setTimeout(function () { 
+		player.pauseVideo();
+		player.unMute();
+		player.seekTo(0);
+		next();
+	}, 1000);
+}
+
+Miku.playNextVideo = function () {
+	l("Playing video");
+	var oldPlayer = Miku.ytPlayers.shift(),
+		newPlayer = Miku.ytPlayers[0];
+	Miku.ytPlayers.push(oldPlayer);
+	oldPlayer.player.stopVideo();
+	newPlayer.player.playVideo();
+	q("#" + oldPlayer.id).forEach(function (node) {
+		node.style.display = "none";
+	});
+	q("#" + newPlayer.id).forEach(function (node) {
+		node.style.display = "block";
+	});
+	after([Miku.prepNextVideo]);
 }
 
 Miku.skipVideo = function () {
-	now([Miku.playRandomVideo]);
+	now([Miku.playNextVideo]);
 	return false;
 }
 
@@ -154,7 +186,7 @@ Miku.preventDoorStuck = function(ytPlayer) {
 			stuckCount++;
 		if (stuckCount > 3) {
 			stuckCount = 0;
-			now([Miku.playRandomVideo]);
+			now([Miku.playNextVideo]);
 		}
 		window.setTimeout(unstickDoor, 1000);
 	}
@@ -166,7 +198,7 @@ Miku.onYtPlayerStateChange = function (evt) {
 	l("State change", state);
 	// video ended:
 	if (state === 0) {
-		now([Miku.playRandomVideo]);
+		now([Miku.playNextVideo]);
 	}
 	Miku.ytPlayerLastState = state;
 }
