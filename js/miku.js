@@ -53,7 +53,7 @@ window.onGapiLoaded = Miku.onGapiLoaded = function () {
     gapi = window.gapi;
     gapi.client.setApiKey(Miku.api_key);
     now([
-        function () { 
+        function () {
             l("Loading youtube");
             gapi.client.load("youtube", "v3", next);
         },
@@ -71,7 +71,7 @@ function makePlayer(id) {
         player: new window.YT.Player(id, {
             height: '100%',
             width: '100%',
-            playerVars: { 
+            playerVars: {
                 autoplay: 0,
                 controls: 0,
                 showinfo: 0,
@@ -154,7 +154,7 @@ Miku.prepNextVideo = function () {
     player.cueVideoById(aVideoId);
     player.mute();
     player.playVideo();
-    window.setTimeout(function () { 
+    window.setTimeout(function () {
         player.pauseVideo();
         player.unMute();
         player.seekTo(0);
