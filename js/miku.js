@@ -2,7 +2,7 @@
 window.Miku = (function (window) {
 
 var Miku = {};
-Miku.logging = true;// false;
+Miku.logging = false;
 
 var gapi;
 
@@ -102,8 +102,9 @@ Miku.setupInterface = function () {
 	q(".loading").forEach(function (node) {
 		node.style.display = "none";
 	});
-	Miku.preventDoorStuck(Miku.ytPlayers[0].player);
-	Miku.preventDoorStuck(Miku.ytPlayers[1].player);
+	Miku.ytPlayers.forEach(function (p) {
+		Miku.preventDoorStuck(p.player);
+	});
 	next();
 }
 
@@ -200,7 +201,6 @@ Miku.onYtPlayerStateChange = function (evt) {
 	if (state === 0) {
 		now([Miku.playNextVideo]);
 	}
-	Miku.ytPlayerLastState = state;
 }
 
 return Miku;
