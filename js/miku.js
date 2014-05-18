@@ -105,10 +105,11 @@ Miku.loadPlaylist = function () {
 			part: "contentDetails",
 			pageToken: nextPageToken});
 		req.execute(function (res) {
-			playlistItems = playlistItems.concat(res.items.map(function (item) {
+			var items = res.items || [];
+			l("Got", items.length, "videos");
+			playlistItems = playlistItems.concat(items.map(function (item) {
 				return {videoId: item.contentDetails.videoId};
 			}));
-			l("Loaded", res.items.length, "videos");
 			nextPageToken = res.nextPageToken;
 			if (nextPageToken !== undefined) {
 				loadMore();
