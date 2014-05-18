@@ -20,7 +20,7 @@ var l = Miku.logging ? window.console.log.bind(window.console) : function () {};
 Miku.api_key = "AIzaSyDsImZ2h077_LxeDhwh3Q6fjHtd5uZ7aaM";
 Miku.playlistId = "PL_ON6xeP4BD9pU8hGN5O_yDrrBckEVQrR";
 Miku.playlistItems = [];
-Miku.ytPlayerReady = false;
+Miku.ytPlayer = undefined;
 
 Miku.asyncActions = [];
 
@@ -39,7 +39,7 @@ var now = Miku.pushActions = function (actions) {
 
 var after = Miku.laterActions = function (actions) {
 	if (Miku.asyncActions.length === 0)
-		actions = [Miku.pause].concat(actions);
+		actions = [pause].concat(actions);
 	Miku.asyncActions = Miku.asyncActions.concat(actions);
 	Miku.doNextAction();
 }
@@ -59,6 +59,7 @@ window.onGapiLoaded = Miku.onGapiLoaded = function () {
 		Miku.loadPlaylist,
 		Miku.dumpPl,
 		Miku.setupPlayer,
+		Miku.setupInterface,
 		Miku.playRandomVideo
 	]);
 }
@@ -74,13 +75,13 @@ Miku.setupPlayer = function () {
         },
         videoId: Miku.randomVideoId(),
         events: {
-        	'onReady': Miku.onYtPlayerReady,
+        	'onReady': next,
             'onStateChange': Miku.onYtPlayerStateChange,
       }
 	});
 }
 
-Miku.onYtPlayerReady = function () {
+Miku.setupInterface = function () {
 	l("YTP ready")
 	l("skip buttons", q(".skip").length);
 	q(".skip").forEach(function (node) {
@@ -89,7 +90,7 @@ Miku.onYtPlayerReady = function () {
 	q(".loading").forEach(function (node) {
 		node.style.display = "none";
 	});
-	Miku.ytPlayerReady = true;
+	Miku.preventDoorStuck(Miku.ytPlayer);
 	next();
 }
 
@@ -133,11 +134,6 @@ Miku.randomVideoId = function () {
 
 Miku.playRandomVideo = function () {
 	l("Asked to play a video");
-	if (Miku.playlistItems.length === 0 || ! Miku.ytPlayerReady) {
-		l("Wasn't ready to play", Miku.playlistItems.length, Miku.ytPlayer);
-		return after([Miku.playRandomVideo]);		
-	}
-
 	var aVideoId = Miku.randomVideoId();
 	l("Playing video", aVideoId);
 	Miku.ytPlayer.loadVideoById(aVideoId, 0);
@@ -149,13 +145,26 @@ Miku.skipVideo = function () {
 	return false;
 }
 
+Miku.preventDoorStuck = function(ytPlayer) {
+	// DOOR STUCK
+	var stuckCount = -1;
+	function unstickDoor() {
+		if (ytPlayer.getPlayerState() === -1)
+			stuckCount++;
+		if (stuckCount > 3) {
+			stuckCount = 0;
+			now([Miku.playRandomVideo]);
+		}
+		window.setTimeout(unstickDoor, 1000);
+	}
+	unstickDoor();
+}
+
 Miku.onYtPlayerStateChange = function (evt) {
 	var state = evt.data;
 	l("State change", state);
-		// video ended:
-	if (state === 0
-				// video was deleted:
-			|| (state === -1 && Miku.ytPlayerLastState === 3)) {
+	// video ended:
+	if (state === 0) {
 		now([Miku.playRandomVideo]);
 	}
 	Miku.ytPlayerLastState = state;
