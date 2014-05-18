@@ -74,7 +74,9 @@ function makePlayer(id) {
 	        playerVars: { 
 	        	autoplay: 0,
 	        	controls: 0,
-	        	showinfo: 0
+	        	showinfo: 0,
+	        	rel: 0,
+	        	modestbranding: 1
 	        },
 	        videoId: "",
 	        events: {
