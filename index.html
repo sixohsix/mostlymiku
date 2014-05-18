@@ -1,13 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>mostlymiku</title>
-	<script src="js/miku.js"></script>
-	<script src="http://www.youtube.com/iframe_api"></script>
-	<script src="https://apis.google.com/js/client.js?onload=onGapiLoaded"></script>
+<meta charset="utf-8">
+<title>mostlymiku</title>
+<style>
+body {
+	margin: 0;
+	background: #333333;
+	color: #eeeeee;
+	font-family: Helvetica,Arial,sans-serif;
+	font-size: 24pt;
+}
+#mainVideoBox {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	bottom: 56pt;
+	overflow: hidden;
+}
+#controls {
+	position: fixed;
+	top: auto;
+	bottom: 0;
+	height: 40pt;
+	left: 0;
+	width: 100%;
+	overflow: hidden;
+	padding: 8pt;
+}
+a, a:visited {
+	color: #eeeeee;
+}
+.loading {
+	padding: 24pt;
+	font-size: 48pt;
+}
+</style>
+<script src="js/miku.js"></script>
+<script src="http://www.youtube.com/iframe_api"></script>
+<script src="https://apis.google.com/js/client.js?onload=onGapiLoaded"></script>
 </head>
 <body>
-<div id="mainVideo">
+<div id="mainVideoBox">
+<div class="loading">
+Loading...
+</div>
+<div id="mainVideo"></div>
+</div>
+<div id="controls">
+<a href="#" class="skip">Skip this video</a>
 </div>
 </body>
 </html>

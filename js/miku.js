@@ -2,10 +2,19 @@
 window.Miku = (function (window) {
 
 var Miku = {};
-Miku.logging = true;
+Miku.logging = false;
 
 var gapi;
-var q = window.document.querySelectorAll.bind(window.document);
+
+function q(query) {
+	var nodes = window.document.querySelectorAll(query),
+		nodesArray = [];
+	for (var i = 0; i < nodes.length; i++) {
+		nodesArray.push(nodes[i]);
+	}
+	return nodesArray;
+}
+
 var l = Miku.logging ? window.console.log.bind(window.console) : function () {};
 
 Miku.api_key = "AIzaSyDsImZ2h077_LxeDhwh3Q6fjHtd5uZ7aaM";
@@ -58,7 +67,11 @@ Miku.setupPlayer = function () {
 	Miku.ytPlayer = new window.YT.Player('mainVideo', {
         height: '100%',
         width: '100%',
-        playerVars: { 'autoplay': 1, 'controls': 1,'autohide':1,'wmode':'opaque' },
+        playerVars: { 
+        	autoplay: 1,
+        	controls: 0,
+        	showinfo: 0
+        },
         videoId: Miku.randomVideoId(),
         events: {
         	'onReady': Miku.onYtPlayerReady,
@@ -69,6 +82,13 @@ Miku.setupPlayer = function () {
 
 Miku.onYtPlayerReady = function () {
 	l("YTP ready")
+	l("skip buttons", q(".skip").length);
+	q(".skip").forEach(function (node) {
+		node.onclick = Miku.skipVideo;
+	});
+	q(".loading").forEach(function (node) {
+		node.style.display = "none";
+	});
 	Miku.ytPlayerReady = true;
 	next();
 }
@@ -115,7 +135,7 @@ Miku.playRandomVideo = function () {
 	l("Asked to play a video");
 	if (Miku.playlistItems.length === 0 || ! Miku.ytPlayerReady) {
 		l("Wasn't ready to play", Miku.playlistItems.length, Miku.ytPlayer);
-		return; //return after([Miku.playRandomVideo]);		
+		return after([Miku.playRandomVideo]);		
 	}
 
 	var aVideoId = Miku.randomVideoId();
@@ -124,13 +144,21 @@ Miku.playRandomVideo = function () {
 	next();
 }
 
+Miku.skipVideo = function () {
+	now([Miku.playRandomVideo]);
+	return false;
+}
+
 Miku.onYtPlayerStateChange = function (evt) {
 	var state = evt.data;
 	l("State change", state);
-	if (state === 0) {
-		// video ended
+		// video ended:
+	if (state === 0
+				// video was deleted:
+			|| (state === -1 && Miku.ytPlayerLastState === 3)) {
 		now([Miku.playRandomVideo]);
 	}
+	Miku.ytPlayerLastState = state;
 }
 
 return Miku;
