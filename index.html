@@ -3,7 +3,10 @@
 <head>
 	<title>mostlymiku</title>
 	<script src="js/miku.js"></script>
-	<script src="https://apis.google.com/js/client.js?onload=Miku.onLoad"></script>
+	<script>
+		function onGapiLoaded() { Miku.onLoad(); }
+	</script>
+	<script src="https://apis.google.com/js/client.js?onload=onGapiLoaded"></script>
 </head>
 <body>
 <div id="mainVideo">
