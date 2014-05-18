@@ -21,6 +21,7 @@ Miku.api_key = "AIzaSyDsImZ2h077_LxeDhwh3Q6fjHtd5uZ7aaM";
 Miku.playlistId = "PL_ON6xeP4BD9pU8hGN5O_yDrrBckEVQrR";
 Miku.playlistItems = [];
 Miku.ytPlayers = [];
+Miku.noSkip = false;
 
 Miku.asyncActions = [];
 
@@ -144,6 +145,7 @@ Miku.randomVideoId = function () {
 
 Miku.prepNextVideo = function () {
 	l("Prepping video");
+	Miku.noSkip = true;
 	var player = Miku.ytPlayers[1].player;
 	var aVideoId = Miku.randomVideoId();
 	l("Prepping video", aVideoId);
@@ -154,6 +156,7 @@ Miku.prepNextVideo = function () {
 		player.pauseVideo();
 		player.unMute();
 		player.seekTo(0);
+		Miku.noSkip = false;
 		next();
 	}, 1000);
 }
@@ -175,7 +178,8 @@ Miku.playNextVideo = function () {
 }
 
 Miku.skipVideo = function () {
-	now([Miku.playNextVideo]);
+	if (! Miku.noSkip)
+		now([Miku.playNextVideo]);
 	return false;
 }
 

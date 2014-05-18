@@ -19,15 +19,17 @@ body {
 	bottom: 56pt;
 	overflow: hidden;
 }
-#controls {
+.controls {
 	position: fixed;
 	top: auto;
 	bottom: 0;
-	height: 40pt;
+	height: 56pt;
 	left: 0;
 	width: 100%;
 	overflow: hidden;
-	padding: 8pt;
+}
+.controlInner {
+	padding: 8pt;	
 }
 a, a:visited {
 	color: #eeeeee;
@@ -39,6 +41,10 @@ a, a:visited {
 #mainVideo2 {
 	display: none;
 }
+.tiny {
+	font-size: 12pt;
+	float: right;
+}
 </style>
 <script src="js/miku.js"></script>
 <script src="http://www.youtube.com/iframe_api"></script>
@@ -46,15 +52,18 @@ a, a:visited {
 </head>
 <body>
 <div id="mainVideoBox">
-<div class="loading">
-Loading...
+	<div class="loading">
+		Loading...
+	</div>
+	<div id="mainVideo"></div>
+	<div id="mainVideo2"></div>
 </div>
-<div id="mainVideo"></div>
-<div id="mainVideo2"></div>
-</div>
-<div id="controls">
-<a href="#" class="skip">Skip this video</a>&nbsp;&nbsp;&nbsp;
-<a href="https://twitter.com/mostlymiku" target="_blank">Follow @mostlymiku for more</a>
+<div class="controls">
+	<div class="controlInner">
+		<a href="#" class="skip">Skip this video</a>&nbsp;&nbsp;&nbsp;
+		<a href="https://twitter.com/mostlymiku" target="_blank">Follow @mostlymiku for more</a>
+		<span class="tiny">*featuring InstaSkip™ technology</span>
+	</div>
 </div>
 </body>
 </html>
